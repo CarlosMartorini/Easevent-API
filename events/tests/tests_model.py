@@ -19,7 +19,7 @@ class TestEventModel(TestCase):
             username='owner',
             email='owner@example.com',
             password='123',
-            is_superuser=False
+            is_superuser=True
         )
 
         cls.street = 'E 39th St'
@@ -82,7 +82,7 @@ class TestEventModel(TestCase):
         self.artist1 = User.objects.create_user(
             username='artist1',
             email='artist1@example.com',
-            is_superuser=True,
+            is_superuser=False,
             phone="970707070",
             solo=True,
             password='123',
@@ -92,7 +92,7 @@ class TestEventModel(TestCase):
         self.artist2 = User.objects.create_user(
             username='artist2',
             email='artist2@example.com',
-            is_superuser=True,
+            is_superuser=False,
             phone="97070707070",
             solo=True,
             password='123',
