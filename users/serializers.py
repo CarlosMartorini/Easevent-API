@@ -17,4 +17,4 @@ class DynamicFieldsModelUserSerializer(serializers.ModelSerializer):
 class UserSerializer(DynamicFieldsModelUserSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email', 'is_superuser', 'phone', 'solo', 'hour_price')
+        fields = ('id', 'username', 'password', 'email', 'is_superuser', 'phone', 'solo', 'hour_price',)
