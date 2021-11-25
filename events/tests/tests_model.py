@@ -3,7 +3,7 @@ from datetime import datetime
 from users.models import User
 from adresses.models import Address
 from music_styles.models import MusicStyleModel
-from events.models import Event
+from events.models import EventModel
 
 
 class TestEventModel(TestCase):
@@ -38,7 +38,7 @@ class TestEventModel(TestCase):
             country=cls.country,
         )
 
-        cls.event = Event.objects.create(
+        cls.event = EventModel.objects.create(
             datetime=cls.datetime,
             repeat_date=True,
             address=cls.address.id,
