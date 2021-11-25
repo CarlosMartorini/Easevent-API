@@ -1,5 +1,5 @@
 from django.test import TestCase
-from datetime import datetime
+from datetime import datetime, timedelta
 from users.models import User
 from adresses.models import Address
 from music_styles.models import MusicStyleModel
@@ -11,7 +11,7 @@ class TestEventModel(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.datetime = datetime.utcnow()
-        cls.repeat_date = True
+        cls.repeat_datetime = True
         cls.details = 'details'
         cls.base_price = 9.99
 
@@ -19,7 +19,7 @@ class TestEventModel(TestCase):
             username='owner',
             email='owner@example.com',
             password='123',
-            is_admin=False
+            is_superuser=False
         )
 
         cls.street = 'E 39th St'
@@ -40,7 +40,7 @@ class TestEventModel(TestCase):
 
         cls.event = EventModel.objects.create(
             datetime=cls.datetime,
-            repeat_date=True,
+            repeat_datetime=True,
             address=cls.address.id,
             owner=cls.owner.id,
             details=cls.details,
@@ -51,8 +51,8 @@ class TestEventModel(TestCase):
         self.assertIsInstance(self.event.datetime, datetime)
         self.assertEqual(self.event.datetime, self.datetime)
 
-        self.assertIsInstance(self.event.repeat_date, bool)
-        self.assertEqual(self.event.repeat_date, self.repeat_date)
+        self.assertIsInstance(self.event.repeat_datetime, bool)
+        self.assertEqual(self.event.repeat_datetime, self.repeat_datetime)
 
         self.assertIsInstance(self.event.details, str)
         self.assertEqual(self.event.details, self.details)
@@ -82,7 +82,7 @@ class TestEventModel(TestCase):
         self.artist1 = User.objects.create_user(
             username='artist1',
             email='artist1@example.com',
-            is_admin=True,
+            is_superuser=True,
             phone="970707070",
             solo=True,
             password='123',
@@ -92,15 +92,15 @@ class TestEventModel(TestCase):
         self.artist2 = User.objects.create_user(
             username='artist2',
             email='artist2@example.com',
-            is_admin=True,
+            is_superuser=True,
             phone="97070707070",
             solo=True,
             password='123',
             hour_price=9.99
         )
 
-        self.event.lineup.add(self.artist1)
-        self.event.lineup.add(self.artist2)
+        self.event.lineup.add(artist=self.artist1, performance_datetime=self.event.datetime)
+        self.event.lineup.add(artist=self.artist2, performance_datetime=self.event.datetime + timedelta(hours=+1))
 
         self.assertEquals(2, self.event.lineup.count())
 
