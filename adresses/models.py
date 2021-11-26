@@ -2,9 +2,10 @@ from django.db import models
 
 
 class AdressesModel(models.Model):
-    street = models.CharField(null=False)
-    neighbourhood = models.CharField(null=False)
+    street = models.CharField(max_length=255, null=False)
+    neighbourhood = models.CharField(max_length=255,null=False)
     number = models.IntegerField()
-    city = models.CharField(null=False)
-    state = models.CharField(null=False)
+    city = models.CharField(max_length=255,null=False)
+    state = models.CharField(max_length=255,null=False)
+    country = models.CharField(max_length=255,null=False)
 
