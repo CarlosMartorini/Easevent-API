@@ -1,4 +1,4 @@
-from rest_framework import fields, serializers, status
+from rest_framework import  serializers, status
 from rest_framework.exceptions import ValidationError
 from users.models import User
 
@@ -26,20 +26,25 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
         return User.objects.create_user(**validated_data)
 
 
-    def validate(self, attrs):
-        received_attrs = dict(attrs)
-        required_fields = ['hour_price', 'phone', 'solo']
+    def validate_empty_values(self, data):
+        base_keys = ['username', 'password', 'email', 'is_superuser']
+        artist_required_fields = ['hour_price', 'phone', 'solo']
         missing_keys = []
 
-        if not received_attrs['is_superuser']:
-            for field in required_fields:
-                if field not in received_attrs.keys():
+        for field in base_keys:
+            if field not in data.keys():
+                missing_keys.append(field)
+
+        if not data['is_superuser']:
+
+            for field in artist_required_fields:
+                if field not in data.keys():
                     missing_keys.append(field)
 
-            if missing_keys:
-                raise ValidationError({'details': f'some data is missing: {[*missing_keys]}'})
+        if missing_keys:
+            raise ValidationError({'required_fields': [*missing_keys]}, code=status.HTTP_406_NOT_ACCEPTABLE)
 
-        return super().validate(attrs)
+        return super().validate_empty_values(data)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -49,6 +54,6 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         if not type(self.initial_data['username']) is str or\
            not type(self.initial_data['password']) is str:
-            raise ValidationError({'details': 'incorrect value type of username or password'})
+            raise ValidationError({'error': 'incorrect value type of username or password'})
 
         return super().validate(attrs)

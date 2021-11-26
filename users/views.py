@@ -1,11 +1,13 @@
-from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.authentication import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
 from users.models import User
 from users.serializers import LoginSerializer, UserSerializer
-from rest_framework import status
+
 
 @api_view(['post'])
 def create_user(request):
@@ -31,6 +33,10 @@ def create_user(request):
         return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     except ValidationError as e:
+
+        if 'unique' in [code[0] for code in e.get_codes().values()]:
+            return Response(e.detail, status=status.HTTP_409_CONFLICT)
+
         return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['post'])
@@ -55,3 +61,5 @@ def login(request):
 
     except ValidationError as e:
         return Response(e.detail, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+
