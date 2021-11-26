@@ -71,7 +71,6 @@ Local server URL: http://127.0.0.1:8000/
 {
     "id": 1,
     "username": "John",
-    "password": "123456",
     "email": "john@gmail.com",
     "is_superuser": false,
     "phone": "199898989",
@@ -86,6 +85,40 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "error": "User already exists!"
+}
+```
+
+## Update User Artist
+
+- PUT api/users/1
+- Status HTTP 200 OK
+
+```json
+{
+    "solo": true,
+    "hour_price": 180.00
+}
+```
+- Expected response
+
+```json
+{
+    "id": 1,
+    "username": "John",
+    "email": "john@gmail.com",
+    "is_superuser": false,
+    "phone": "199898989",
+    "solo": true,
+    "hour_price": 180.00
+}
+```
+
+- If you try to update a non-existent user
+- Status HTTP 404 NOT FOUND
+
+```json
+{
+    "error": "User not founded."
 }
 ```
 
@@ -109,7 +142,6 @@ Local server URL: http://127.0.0.1:8000/
 {
     "id": 2,
     "username": "Doe",
-    "password": "67890",
     "email": "doe@gmail.com",
     "is_superuser": true,
     "phone": "119797979",
@@ -122,6 +154,62 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "error": "User already exists!"
+}
+```
+
+## Update User Owner
+
+- PUT api/users/2
+- Status HTTP 200 OK
+
+```json
+{
+    "phone": "139797979",
+}
+```
+- Expected response
+
+```json
+{
+    "id": 2,
+    "username": "Doe",
+    "email": "doe@gmail.com",
+    "is_superuser": true,
+    "phone": "139797979",
+}
+```
+
+- If you try to update a non-existent user
+- Status HTTP 404 NOT FOUND
+
+```json
+{
+    "error": "User not founded."
+}
+```
+
+## Showing all Users
+
+- GET api/users
+- Status HTTP 200 OK
+- Expected response
+
+```json
+{
+    "id": 1,
+    "username": "John",
+    "email": "john@gmail.com",
+    "is_superuser": false,
+    "phone": "199898989",
+    "solo": false,
+    "hour_price": 150.00
+},
+{
+    "id": 2,
+    "username": "Doe",
+    "email": "doe@gmail.com",
+    "is_superuser": true,
+    "phone": "139797979",
 }
 ```
 
@@ -159,7 +247,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ```json
 {
-    "error": "username or password it's missing"
+    "error": "Username or password it's missing"
 }
 ```
 
@@ -201,16 +289,15 @@ Local server URL: http://127.0.0.1:8000/
 
 ```json
 {
-    "date": "",
+    "date": "2021-12-10 19:00:00",
     "repeat_date": "",
-    "address_id": {
+    "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
         "number": 37,
         "city": "Orlando",
         "state": "Florida",
     },
-    "owner_id": 2,
     "details": "Some details for local event",
     "base_price": 120.00,
     "music_styles": [
@@ -229,9 +316,9 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "id": 1,
-    "date": "",
+    "date": "2021-12-10 19:00:00",
     "repeat_date": "",
-    "address_id": {
+    "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
         "number": 37,
@@ -271,11 +358,11 @@ Local server URL: http://127.0.0.1:8000/
     "lineup": [
         {
             "artist_id": 1,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 20:00:00"
         },
         {
             "artist_id": 3,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
 }
@@ -286,9 +373,9 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "id": 1,
-    "date": "",
+    "date": "2021-12-10 19:00:00",
     "repeat_date": "",
-    "address_id": {
+    "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
         "number": 37,
@@ -309,11 +396,11 @@ Local server URL: http://127.0.0.1:8000/
     "lineups": [
         {
             "artist_id": 1,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 20:00:00"
         },
         {
             "artist_id": 3,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
 }
@@ -363,9 +450,9 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "id": 1,
-    "date": "",
+    "date": "2021-12-10 19:00:00",
     "repeat_date": "",
-    "address_id": {
+    "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
         "number": 37,
@@ -386,19 +473,19 @@ Local server URL: http://127.0.0.1:8000/
     "lineups": [
         {
             "artist_id": 1,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 20:00:00"
         },
         {
             "artist_id": 3,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
 },
 {
     "id": 2,
-    "date": "",
+    "date": "2021-12-15 20:00:00",
     "repeat_date": "",
-    "address_id": {
+    "address": {
         "street": "2nd Ave",
         "neighbourhood": "Rose Hill",
         "number": 519,
@@ -422,15 +509,15 @@ Local server URL: http://127.0.0.1:8000/
     "lineups": [
         {
             "artist_id": 1,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-15 21:00:00"
         },
         {
             "artist_id": 3,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-15 22:00:00"
         },
         {
             "artist_id": 5,
-            "performance_datetime": ""
+            "performance_datetime": "2021-12-15 23:00:00"
         }
     ]
 }
