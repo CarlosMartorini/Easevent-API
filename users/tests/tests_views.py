@@ -6,7 +6,7 @@ class UserAccountViewsTest(TestCase):
         self.client = APIClient()
 
         self.artist1_data = {
-            "username": 'Lady Gaga',
+            "username": 'LadyGaga',
             "password": '1234',
             "email": 'ladygaga@gmail.com',
             "is_superuser": False,
@@ -16,7 +16,7 @@ class UserAccountViewsTest(TestCase):
         }
 
         self.artist1_login_data = {
-            "username": 'Lady Gaga',
+            "username": 'LadyGaga',
             "password": '1234',
         }
 
@@ -26,19 +26,19 @@ class UserAccountViewsTest(TestCase):
         }
 
         self.owner_event1_data = {
-            "username": 'Kate Bishop',
+            "username": 'KateBishop',
             "password": '1234',
             "email": 'ladygaga@gmail.com',
             "is_superuser": True,
         }
 
         self.owner_event1_login_data = {
-            "username": 'Kate Bishop',
+            "username": 'KateBishop',
             "password": '1234',
         }
 
         self.wrong_artist1_data = {
-            "username": 'Lady Gaga',
+            "username": 'LadyGaga',
             "password": '1234',
             "is_superuser": False,
             "phone": '23995465422',
@@ -47,7 +47,7 @@ class UserAccountViewsTest(TestCase):
             # missing email
         }
         self.wrong_owner_event1_data = {
-            "username": 'Kate Bishop',
+            "username": 'KateBishop',
             "password": '1234',
             "email": 'ladygaga@gmail.com',
             # missing is_superuser
@@ -77,7 +77,7 @@ class UserAccountViewsTest(TestCase):
         self.assertEqual(response.json(),
                          {
                             'id': 1,
-                            **self.artist1_copy
+                            **artist1_copy
                           }
                          )
 
@@ -85,7 +85,7 @@ class UserAccountViewsTest(TestCase):
         # LOGIN AS ARTIST
         logged_user = self.client.post('/api/login/', self.artist1_login_data, format='json')
 
-        self.assertIn('token', logged_user.keys())
+        self.assertIn('token', logged_user.json().keys())
 
         self.assertEqual(logged_user.status_code, 200)
 
@@ -102,7 +102,7 @@ class UserAccountViewsTest(TestCase):
         self.assertEqual(response.json(),
                          {
                             'id': 1,
-                            **self.owner1_copy
+                            **owner1_copy
                           }
                          )
 
@@ -110,7 +110,7 @@ class UserAccountViewsTest(TestCase):
         # LOGIN AS OWNER_EVENT
         logged_user = self.client.post('/api/login/', self.owner_event1_login_data, format='json')
 
-        self.assertIn('token', logged_user.keys())
+        self.assertIn('token', logged_user.json().keys())
 
         self.assertEqual(logged_user.status_code, 200)
 
@@ -136,9 +136,9 @@ class UserAccountViewsTest(TestCase):
         # LOGIN AS ARTIST
         logged_user = self.client.post('/api/login/', self.wrong_artist1_login_data_1, format='json')
 
-        self.assertNotIn('token', logged_user.keys())
+        self.assertNotIn('token', logged_user.json().keys())
 
-        self.assertEqual(logged_user.status_code, 422)
+        self.assertEqual(logged_user.status_code, 415)
 
     def test_create_an_user_successfully_but_login_fall_with_wrong_credentials_value(self):
 
@@ -146,8 +146,8 @@ class UserAccountViewsTest(TestCase):
         self.client.post('/api/accounts/', self.artist1_data, format='json')
 
         # LOGIN AS ARTIST
-        logged_user = self.client.post('/api/login/', self.wrong2_artist1_login_data_2, format='json')
+        logged_user = self.client.post('/api/login/', self.wrong_artist1_login_data_2, format='json')
 
-        self.assertNotIn('token', logged_user.keys())
+        self.assertNotIn('token', logged_user.json().keys())
 
         self.assertEqual(logged_user.status_code, 401)
