@@ -77,35 +77,35 @@ class TestEventModel(TestCase):
         self.assertIn(self.music_style1, list(self.event.music_styles.all()))
         self.assertIn(self.music_style2, list(self.event.music_styles.all()))
 
-    # def test_event_can_be_attached_to_multiple_artists_in_lineup(self):
+    def test_event_can_be_attached_to_multiple_artists_in_lineup(self):
 
-    #     self.artist1 = User.objects.create_user(
-    #         username='artist1',
-    #         email='artist1@example.com',
-    #         is_superuser=False,
-    #         phone="970707070",
-    #         solo=True,
-    #         password='123',
-    #         hour_price=9.99
-    #     )
+        self.artist1 = User.objects.create_user(
+            username='artist1',
+            email='artist1@example.com',
+            is_superuser=False,
+            phone="970707070",
+            solo=True,
+            password='123',
+            hour_price=9.99
+        )
 
-    #     self.artist2 = User.objects.create_user(
-    #         username='artist2',
-    #         email='artist2@example.com',
-    #         is_superuser=False,
-    #         phone="97070707070",
-    #         solo=True,
-    #         password='123',
-    #         hour_price=9.99
-    #     )
+        self.artist2 = User.objects.create_user(
+            username='artist2',
+            email='artist2@example.com',
+            is_superuser=False,
+            phone="97070707070",
+            solo=True,
+            password='123',
+            hour_price=9.99
+        )
 
-    #     self.event.lineup.add(self.artist1, self.event.datetime)
-    #     self.event.lineup.add(self.artist2, self.event.datetime + timedelta(hours=+1))
+        self.event.lineup.add(self.artist1, through_defaults={'performance_datetime': self.event.datetime})
+        self.event.lineup.add(self.artist2, through_defaults={'performance_datetime': self.event.datetime + timedelta(hours=+1)})
 
-    #     self.assertEquals(2, self.event.lineup.count())
+        self.assertEquals(2, self.event.lineup.count())
 
-    #     self.assertIn(self.artist1, list(self.event.lineup.all()))
-    #     self.assertIn(self.artist2, list(self.event.lineup.all()))
+        self.assertIn(self.artist1, list(self.event.lineup.all()))
+        self.assertIn(self.artist2, list(self.event.lineup.all()))
 
     def test_event_can_be_attached_to_multiple_artists_in_candidatures(self):
 
@@ -131,7 +131,7 @@ class TestEventModel(TestCase):
 
         self.event.candidatures.add(self.artist1)
         self.event.candidatures.add(self.artist2)
-        
+
         self.assertEquals(2, self.event.candidatures.count())
 
         self.assertIn(self.artist1, list(self.event.candidatures.all()))
