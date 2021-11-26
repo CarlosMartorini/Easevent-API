@@ -4,13 +4,13 @@ from users.models import User
 class UserModelTest(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.username = 'Lady Gaga'
+        cls.username = 'LadyGaga'
         cls.password = '1234'
         cls.email = 'ladygaga@gmail.com'
         cls.is_superuser = False
         cls.phone = '23995465422'
         cls.solo = True
-        cls.hour_price = 200
+        cls.hour_price = 200.0
 
 
         cls.user = User.objects.create(
