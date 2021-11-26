@@ -5,7 +5,6 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from users.models import User
 from users.serializers import LoginSerializer, UserSerializer
 
 
@@ -29,15 +28,15 @@ def create_user(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     except KeyError as e:
-        message = {key: ['this field is required'] for key in e.args}
-        return Response(message, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({'required_fields': [*e.args]}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     except ValidationError as e:
 
         if 'unique' in [code[0] for code in e.get_codes().values()]:
-            return Response(e.detail, status=status.HTTP_409_CONFLICT)
+            return Response({'error': 'User already exists!'}, status=status.HTTP_409_CONFLICT)
 
-        return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
+        if '406' in [code[0] for code in e.get_codes().values()]:
+            return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['post'])
 def login(request):
@@ -53,13 +52,7 @@ def login(request):
             return Response({'token': token.key}, status=status.HTTP_200_OK)
 
         else:
-            return Response({'details': 'login failed'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    except KeyError:
-
-        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'error': 'Username or password may be wrong!'}, status=status.HTTP_401_UNAUTHORIZED)
 
     except ValidationError as e:
         return Response(e.detail, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-
-
