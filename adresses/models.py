@@ -7,4 +7,5 @@ class AdressesModel(models.Model):
     number = models.IntegerField()
     city = models.CharField(max_length=255,null=False)
     state = models.CharField(max_length=255,null=False)
+    country = models.CharField(max_length=255,null=False)
 
