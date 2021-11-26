@@ -31,11 +31,10 @@ def create_user(request):
         return Response({'required_fields': [*e.args]}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     except ValidationError as e:
-
         if 'unique' in [code[0] for code in e.get_codes().values()]:
             return Response({'error': 'User already exists!'}, status=status.HTTP_409_CONFLICT)
 
-        if '406' in [code[0] for code in e.get_codes().values()]:
+        if 406 in [code[0] for code in e.get_codes().values()]:
             return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['post'])
