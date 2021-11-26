@@ -4,7 +4,7 @@ from django.db import models
 class RepeatEvent(models.TextChoices):
     WEEKLY = 'W', 'Weekly'
     MONTHLY = 'M', 'Monthly'
-    NULL = 'N', None
+    NULL = 'N', 'None'
 
 
 class EventModel(models.Model):
