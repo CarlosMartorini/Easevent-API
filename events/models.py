@@ -7,10 +7,11 @@ class RepeatEvent(models.TextChoices):
     NULL = 'N', 'None'
 
 
-class Lineup(models.Model):
-    event = models.ForeignKey('events.EventModel', on_delete=models.CASCADE))
+class LineupEvent(models.Model):
+    event = models.ForeignKey('events.EventModel', on_delete=models.CASCADE)
     artist = models.ForeignKey('users.User', on_delete=models.CASCADE)
     performance_datetime = models.DateTimeField()
+
 
 class EventModel(models.Model):
     datetime = models.DateTimeField()
@@ -19,7 +20,7 @@ class EventModel(models.Model):
     owner = models.ForeignKey('users.User', on_delete=models.PROTECT)
     details = models.TextField()
     base_price = models.FloatField()
-    lineup = models.ManyToManyField('users.User', related_name='events', through=Lineup)
+    lineup = models.ManyToManyField('users.User', related_name='events', through=LineupEvent)
     candidatures = models.ManyToManyField('users.User', related_name='candidatures')
     music_styles = models.ManyToManyField('music_styles.MusicStyleModel')
 
