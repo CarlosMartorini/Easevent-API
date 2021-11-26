@@ -6,3 +6,4 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventModel
         fields = '__all__'
+        depth = 1
