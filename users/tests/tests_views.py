@@ -151,3 +151,40 @@ class UserAccountViewsTest(TestCase):
         self.assertNotIn('token', logged_user.json().keys())
 
         self.assertEqual(logged_user.status_code, 401)
+
+    def test_get_all_users(self):
+        artist = self.client.post('/api/accounts/', self.artist1_data, format='json')
+        self.assertEqual(artist.status_code, 201)
+
+        owner = self.client.post('/api/accounts/', self.owner_event1_data, format='json')
+        self.assertEqual(owner.status_code, 201)
+
+        users = self.client.get('/api/accounts/', format='json')
+        self.assertEqual(len(users.json()), 2)
+        self.assertEqual(users.status_code, 200)
+
+    def test_update_own_profile_info(self):
+        artist = self.client.post('/api/accounts/', self.artist1_data, format='json')
+        self.assertEqual(artist.status_code, 201)
+
+        response = self.client.put('/api/accounts/1/', {'username': 'TaylorSwift'}, format='json')
+        self.assertEqual(response.status_code, 200)
+
+
+        expected_data = self.artist1_data.copy()
+        expected_data['username'] = 'TaylorSwift'
+
+        self.assertEqual(response.json().keys(),
+                            {
+                                'id': 1,
+                                **expected_data
+                            }
+                         )
+
+        self.assertEqual(len(response.json()), 1)
+
+    def test_fail_to_update_own_profile_info_because_id_not_found(self):
+        response = self.client.put('/api/accounts/1/', {'username': 'TaylorSwift'}, format='json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'error': 'User not founded'})
+
