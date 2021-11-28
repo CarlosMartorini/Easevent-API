@@ -2,6 +2,7 @@ from rest_framework import  serializers, status
 from rest_framework.exceptions import ValidationError
 from users.models import User
 
+
 class DynamicFieldsModelUserSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
 
@@ -25,8 +26,10 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
-
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
     def validate_empty_values(self, data):
+
         base_keys = ['username', 'password', 'email', 'is_superuser']
         artist_required_fields = ['hour_price', 'phone', 'solo']
         missing_keys = []
@@ -35,7 +38,8 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
             if field not in data.keys():
                 missing_keys.append(field)
 
-        if not data['is_superuser']:
+        if not data.get('is_superuser') and\
+           not self.instance:
 
             for field in artist_required_fields:
                 if field not in data.keys():
@@ -46,6 +50,15 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
 
         return super().validate_empty_values(data)
 
+    def validate(self, attrs):
+        received_data = dict(attrs)
+
+        if received_data.get('is_superuser') and self.instance:
+           if self.instance.is_superuser != received_data['is_superuser']:
+
+            raise ValidationError({'error': 'is_superuser field cannot change'})
+
+        return super().validate(attrs)
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
