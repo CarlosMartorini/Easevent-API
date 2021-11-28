@@ -12,7 +12,7 @@ class UserAccountViewsTest(TestCase):
             "is_superuser": False,
             "phone": '23995465422',
             "solo": True,
-            "hour_price": 200,
+            "hour_price": 200.0,
         }
 
         self.artist1_login_data = {
@@ -27,7 +27,7 @@ class UserAccountViewsTest(TestCase):
             "is_superuser": False,
             "phone": '239215465422',
             "solo": False,
-            "hour_price": 200,
+            "hour_price": 200.0,
         }
 
         self.artist2_login_data = {
@@ -71,7 +71,7 @@ class UserAccountViewsTest(TestCase):
             "is_superuser": False,
             "phone": '23995465422',
             "solo": True,
-            "hour_price": 200,
+            "hour_price": 200.0,
             # missing email
         }
         self.wrong_owner_event1_data = {
@@ -186,7 +186,6 @@ class UserAccountViewsTest(TestCase):
 
         # CREATE AN ARTIST
         response = self.client.post('/api/accounts/', artist1, format='json')
-
         self.assertEqual(response.status_code, 400)
 
     def test_get_all_and_only_artists(self):
@@ -217,7 +216,7 @@ class UserAccountViewsTest(TestCase):
         self.assertEqual(owner2.status_code, 201)
 
 
-        owners = self.client.get('/api/accounts/artists/', format='json')
+        owners = self.client.get('/api/accounts/owners/', format='json')
 
         self.assertEqual(len(owners.json()), 2)
         self.assertEqual(owners.status_code, 200)
@@ -237,15 +236,15 @@ class UserAccountViewsTest(TestCase):
 
         expected_data = self.artist1_data.copy()
         expected_data['username'] = 'TaylorSwift'
+        expected_data.pop('password')
 
-        self.assertEqual(response.json().keys(),
+        self.assertEqual(response.json(),
                             {
                                 'id': 1,
                                 **expected_data
                             }
                          )
 
-        self.assertEqual(len(response.json()), 1)
 
     def test_fail_to_update_account_of_another_user(self):
         # CREATE AN ARTIST
@@ -257,7 +256,7 @@ class UserAccountViewsTest(TestCase):
         self.assertEqual(artist2.status_code, 201)
 
         # LOGIN AS ARTIST 1
-        token = self.client.post('/api/login', self.artist1_login_data, format='json').json()['token']
+        token = self.client.post('/api/login/', self.artist1_login_data, format='json').json()['token']
 
         self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
 
@@ -271,14 +270,14 @@ class UserAccountViewsTest(TestCase):
         self.client.post('/api/accounts/', self.artist1_data, format='json')
 
         # SET CREDENTIALS WITH INVALID TOKEN
-        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + 'token42342')
+        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + 'token')
 
         # UPDATE THE ACCOUNT
         response = self.client.put('/api/accounts/1/', {'username': 'aaa'}, format='json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), {"detail": "Invalid token."})
 
-    def test_fail_to_update_account_because_user_is_not_provided_token(self):
+    def test_fail_to_update_account_because_user_not_provide_token(self):
         # CREATE AN ARTIST
         self.client.post('/api/accounts/', self.artist1_data, format='json')
 
@@ -287,20 +286,25 @@ class UserAccountViewsTest(TestCase):
 
         # UPDATE ACCOUNT OF THE ARTIST
         response = self.client.put('/api/accounts/1/', {'username': 'aaa'}, format='json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
         # UPDATE ACCOUNT OF THE OWNER
         response = self.client.put('/api/accounts/2/', {'username': 'bbb'}, format='json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {'detail': 'Authentication credentials were not provided.'})
 
     def test_fail_to_update_an_account_because_id_not_found(self):
-        response = self.client.put('/api/accounts/1/', {'username': 'TaylorSwift'}, format='json')
+        self.client.post('/api/accounts/', self.artist2_data, format='json')
+        token = self.client.post('/api/login/', self.artist2_login_data, format='json').json()['token']
+        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
+
+        response = self.client.put('/api/accounts/10/', {'username': 'TaylorSwift'}, format='json')
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {'error': 'User not founded.'})
 
     def test_fail_to_update_is_superuser_field(self):
         # CREATE AN ARTIST AND LOGIN AS HER
-        artist = self.client.post('/api/accounts/', self.artist1_data, format='json')
+        self.client.post('/api/accounts/', self.artist1_data, format='json')
         token = self.client.post('/api/login/', self.artist1_login_data, format='json').json()['token']
         self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
 
@@ -309,12 +313,13 @@ class UserAccountViewsTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
         # CREATE AN OWNER AND LOGI AS HER
-        owner = self.client.post('/api/accounts/', self.owner_event1_data, format='json')
-        token = self.client.post('/api/login/', self.artist1_login_data, format='json').json()['token']
+        self.client.post('/api/accounts/', self.owner_event1_data, format='json')
+        token = self.client.post('/api/login/', self.owner_event1_login_data, format='json').json()['token']
         self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
 
         # UPDATE IS_SUPERUSER FIELD
-        response = self.client.put('/api/accounts/1/', {'is_superuser': False}, format='json')
+        response = self.client.put('/api/accounts/2/', {'is_superuser': False}, format='json')
+
         self.assertEqual(response.status_code, 400)
 
     def test_delete_account(self):
@@ -324,8 +329,9 @@ class UserAccountViewsTest(TestCase):
         token = self.client.post('/api/login/', self.owner_event2_login_data, format='json').json()['token']
 
         self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
-
         response = self.client.delete('/api/accounts/1/')
+
+
         self.assertEqual(response.status_code, 204)
 
     def test_fail_to_delete_account_because_token_is_invalid(self):
@@ -333,11 +339,11 @@ class UserAccountViewsTest(TestCase):
         self.client.post('/api/accounts/', self.owner_event1_data, format='json')
 
         # SET CREDENTIALS WITH INVALID TOKEN
-        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + 'token42342')
+        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + 'token')
 
         # UPDATE THE ACCOUNT
         response = self.client.put('/api/accounts/1/', {'username': 'aaa'}, format='json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), {"detail": "Invalid token."})
 
     def test_fail_to_delete_an_account_of_another_user(self):
@@ -356,11 +362,14 @@ class UserAccountViewsTest(TestCase):
 
         # DELETE ARTIST ACCOUNT
         response = self.client.delete('/api/accounts/2/')
-
         self.assertEqual(response.status_code, 403)
 
     def test_fail_to_delete_a_account_which_id_not_found(self):
-        response = self.client.delete('/api/accounts/1/')
 
+        self.client.post('/api/accounts/', self.artist1_data, format='json')
+        token = self.client.post('/api/login/', self.artist1_login_data, format='json').json()['token']
+        self.client.credentials(HTTP_AUTHORIZATION = 'Token ' + token)
+
+        response = self.client.delete('/api/accounts/10/')
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {'error': 'User not founded.'})
