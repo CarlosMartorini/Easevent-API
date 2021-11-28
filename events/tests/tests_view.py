@@ -1,9 +1,11 @@
+from datetime import timedelta
+
 from django.test import TestCase
-from datetime import datetime, timedelta
-from users.models import User
-from music_styles.models import MusicStyleModel
+from django.utils import timezone
 from events.models import EventModel
+from music_styles.models import MusicStyleModel
 from rest_framework.authtoken.models import Token
+from users.models import User
 
 
 class TestEventViews(TestCase):
@@ -11,7 +13,7 @@ class TestEventViews(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.base_url = "/api/events/"
-        cls.datetime = datetime.utcnow()
+        cls.datetime = timezone.now()
         cls.repeat_event = 'Weekly'
         cls.details = 'details'
         cls.base_price = 9.99
@@ -105,13 +107,28 @@ class TestEventViews(TestCase):
         lineup = [
             {
                 "artist_id": artist.id,
-                "performance_datetime": "2021-12-10 20:00:00"
+                "performance_datetime": timezone.now() + timedelta(hours=+1)
             }
         ]
 
-        response = self.client.put(f'{self.base_url}/1', lineup)
+        response = self.client.put(f'{self.base_url}/{event.id}', lineup)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['lineup'], lineup)
+
+    def test_cannot_insert_artist_with_performance_datetime_before_event_datetime(self):
+        event = self.client.post(f'{self.base_url}', self.event_data)
+
+        artist = self.client.post('/api/accounts/', self.artist_data)
+        lineup = [
+            {
+                "artist_id": artist.id,
+                "performance_datetime": timezone.now() - timedelta(hours=+1)
+            }
+        ]
+
+        response = self.client.put(f'{self.base_url}/{event.id}', lineup)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], 'performance_datetime should be after event datetime')
 
     def test_only_artist_can_insert_in_lineup_event(self):
         event = self.client.post(f'{self.base_url}', self.event_data)
@@ -121,11 +138,11 @@ class TestEventViews(TestCase):
         lineup = [
             {
                 "artist_id": artist.id,
-                "performance_datetime": "2021-12-10 20:00:00"
+                "performance_datetime": timezone.now() + timedelta(hours=+1)
             }
         ]
 
-        response = self.client.put(f'{self.base_url}/1', lineup)
+        response = self.client.put(f'{self.base_url}/{event.id}', lineup)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['error'], "Only artists can be enrolled in the lineups events.")
 
@@ -135,7 +152,7 @@ class TestEventViews(TestCase):
         lineup = [
             {
                 "artist_id": artist.id,
-                "performance_datetime": "2021-12-10 20:00:00"
+                "performance_datetime": timezone.now() + timedelta(hours=+1)
             }
         ]
 
@@ -150,29 +167,29 @@ class TestEventViews(TestCase):
         lineup = [
             {
                 "artist_id": invalid_id,
-                "performance_datetime": "2021-12-10 20:00:00"
+                "performance_datetime": timezone.now() + timedelta(hours=+1)
             }
         ]
 
-        response = self.client.put(f'{self.base_url}/1', lineup)
+        response = self.client.put(f'{self.base_url}/{event.id}', lineup)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['error'], "Event not founded!")
 
     def test_update_event(self):
         event_data_update = {
-            'datetime': datetime.utcnow(),
+            'datetime': timezone.now(),
             'base_price': 99.9
         }
 
         event = self.client.post(f'{self.base_url}', self.event_data)
 
-        response = self.client.put(f'{self.base_url}/1', event_data_update)
+        response = self.client.put(f'{self.base_url}/{event.id}', event_data_update)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['datetime'], event_data_update['datetime'])
         self.assertEqual(response.json()['base_price'], event_data_update['base_price'])
 
     def test_list_events(self):
-        event = self.client.post(f'{self.base_url}', self.event_data)
+        self.client.post(f'{self.base_url}', self.event_data)
 
         response = self.client.get(self.base_url)
 
@@ -182,19 +199,76 @@ class TestEventViews(TestCase):
 
     def test_get_event_by_id(self):
         event = self.client.post(f'{self.base_url}', self.event_data)
-        response = self.client.get(f'{self.base_url}/1')
+        response = self.client.get(f'{self.base_url}/{event.id}')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.event_data, response.json())
 
     def test_delete_event(self):
         event = self.client.post(f'{self.base_url}', self.event_data)
-        response = self.client.delete(f'{self.base_url}/1')
+        response = self.client.delete(f'{self.base_url}/{event.id}')
 
         self.assertEqual(response.status_code, 204)
 
     def test_delete_non_existent_event(self):
-        response = self.client.delete(f'{self.base_url}/1')
+        invalid_event_id = EventModel.objects.count() + 1
+        response = self.client.delete(f'{self.base_url}/{invalid_event_id}')
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['error'], "Event not founded.")
+
+    def test_artist_applies_for_event(self):
+        event = self.client.post(f'{self.base_url}', self.event_data)
+        artist = self.client.post('/api/accounts/', self.artist_data)
+
+        token_artist = Token.objects.create(artist=artist)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        response = self.client.put(f'{self.base_url}/{event.id}/candidatures')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.artist_data, response.json()['candidatures'])
+
+    def test_artist_applies_for_invalid_id_event(self):
+        artist = self.client.post('/api/accounts/', self.artist_data)
+        invalid_event_id = EventModel.objects.count() + 1
+
+        token_artist = Token.objects.create(artist=artist)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        response = self.client.put(f'{self.base_url}/{invalid_event_id}/candidatures')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], "Event not founded!")
+
+    def test_owner_accepts_artists_application(self):
+
+        event = self.client.post(f'{self.base_url}', self.event_data)
+        artist = self.client.post('/api/accounts/', self.artist_data)
+
+        token_artist = Token.objects.create(artist=artist)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        self.client.put(f'{self.base_url}/{event.id}/candidatures')
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token_owner.key}')
+        response = self.client.put(f'{self.base_url}/{event.id}/candidatures', {'artist_id': artist.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.artist_data, response.json()['candidatures'])
+        self.assertIn(self.artist_data, response.json()['lineup'])
+
+    def test_owner_accepts_artists_application_invalid_id_event(self):
+
+        event = self.client.post(f'{self.base_url}', self.event_data)
+        artist = self.client.post('/api/accounts/', self.artist_data)
+        invalid_event_id = EventModel.objects.count() + 1
+
+        token_artist = Token.objects.create(artist=artist)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        self.client.put(f'{self.base_url}/{event.id}/candidatures')
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token_owner.key}')
+        response = self.client.put(f'{self.base_url}/{invalid_event_id}/candidatures', {'artist_id': artist.id})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['error'], "Event not founded!")
