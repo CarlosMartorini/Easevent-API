@@ -4,7 +4,13 @@ from django.db import models
 class RepeatEvent(models.TextChoices):
     WEEKLY = 'W', 'Weekly'
     MONTHLY = 'M', 'Monthly'
-    NULL = 'N', None
+    NULL = 'N', 'None'
+
+
+class LineupEventModel(models.Model):
+    event = models.ForeignKey('events.EventModel', on_delete=models.CASCADE)
+    artist = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    performance_datetime = models.DateTimeField()
 
 
 class EventModel(models.Model):
@@ -14,7 +20,7 @@ class EventModel(models.Model):
     owner = models.ForeignKey('users.User', on_delete=models.PROTECT)
     details = models.TextField()
     base_price = models.FloatField()
-    lineup = models.ManyToManyField('users.User', related_name='events')
+    lineup = models.ManyToManyField('users.User', related_name='events', through=LineupEventModel)
     candidatures = models.ManyToManyField('users.User', related_name='candidatures')
     music_styles = models.ManyToManyField('music_styles.MusicStyleModel')
 
