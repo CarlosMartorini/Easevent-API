@@ -1,16 +1,18 @@
-from django.test import TestCase
 from datetime import datetime, timedelta
-from users.models import User
+
 from adresses.models import AdressesModel
-from music_styles.models import MusicStyleModel
+from django.test import TestCase
+from django.utils import timezone
 from events.models import EventModel, RepeatEvent
+from music_styles.models import MusicStyleModel
+from users.models import User
 
 
 class TestEventModel(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.datetime = datetime.utcnow()
+        cls.datetime = timezone.now()
         cls.repeat_event = RepeatEvent.WEEKLY
         cls.details = 'details'
         cls.base_price = 9.99
@@ -72,7 +74,7 @@ class TestEventModel(TestCase):
         self.event.music_styles.add(self.music_style1)
         self.event.music_styles.add(self.music_style2)
 
-        self.assertEquals(2, len(self.event.music_styles))
+        self.assertEquals(2, self.event.music_styles.count())
 
         self.assertIn(self.music_style1, list(self.event.music_styles.all()))
         self.assertIn(self.music_style2, list(self.event.music_styles.all()))
@@ -102,7 +104,7 @@ class TestEventModel(TestCase):
         self.event.lineup.add(self.artist1, through_defaults={'performance_datetime': self.event.datetime})
         self.event.lineup.add(self.artist2, through_defaults={'performance_datetime': self.event.datetime + timedelta(hours=+1)})
 
-        self.assertEquals(2, len(self.event.lineup))
+        self.assertEquals(2, self.event.lineup.count())
 
         self.assertIn(self.artist1, list(self.event.lineup.all()))
         self.assertIn(self.artist2, list(self.event.lineup.all()))
@@ -132,7 +134,7 @@ class TestEventModel(TestCase):
         self.event.candidatures.add(self.artist1)
         self.event.candidatures.add(self.artist2)
 
-        self.assertEquals(2, len(self.event.candidatures))
+        self.assertEquals(2, self.event.candidatures.count())
 
         self.assertIn(self.artist1, list(self.event.candidatures.all()))
         self.assertIn(self.artist2, list(self.event.candidatures.all()))
