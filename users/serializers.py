@@ -1,5 +1,6 @@
-from rest_framework import  serializers, status
+from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
+
 from users.models import User
 
 
@@ -26,13 +27,18 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
 
+
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
     def validate_empty_values(self, data):
 
         base_keys = ['username', 'password', 'email', 'is_superuser']
         artist_required_fields = ['hour_price', 'phone', 'solo']
         missing_keys = []
+
+        if self.partial:
+            return super().validate_empty_values(data)
 
         for field in base_keys:
             if field not in data.keys():
@@ -46,27 +52,43 @@ class UserSerializer(DynamicFieldsModelUserSerializer):
                     missing_keys.append(field)
 
         if missing_keys:
-            raise ValidationError({'required_fields': [*missing_keys]}, code=status.HTTP_406_NOT_ACCEPTABLE)
-
+            raise ValidationError({'required_fields': [*missing_keys]},
+                                  code=status.HTTP_406_NOT_ACCEPTABLE)
         return super().validate_empty_values(data)
 
     def validate(self, attrs):
         received_data = dict(attrs)
 
-        if received_data.get('is_superuser') and self.instance:
-           if self.instance.is_superuser != received_data['is_superuser']:
+        if received_data.get('is_superuser') is not None and self.instance:
 
-            raise ValidationError({'error': 'is_superuser field cannot change'})
+            if self.instance.is_superuser != received_data['is_superuser']:
 
+                raise ValidationError({'error': 'is_superuser field cannot change'},
+                                      code=status.HTTP_400_BAD_REQUEST)
         return super().validate(attrs)
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.CharField(required=True)
     password = serializers.CharField()
 
+    def validate_empty_values(self, data):
+        required_fields = ['username', 'password']
+        missing_keys = []
+
+        for field in required_fields:
+            if field not in data.keys():
+                missing_keys.append(field)
+        if missing_keys:
+            raise ValidationError({'required_fields': [*missing_keys]},
+                                  code=status.HTTP_406_NOT_ACCEPTABLE)
+
+        return super().validate_empty_values(data)
+
     def validate(self, attrs):
-        if not type(self.initial_data['username']) is str or\
-           not type(self.initial_data['password']) is str:
-            raise ValidationError({'error': 'incorrect value type of username or password'})
+
+        if not isinstance(self.initial_data['username'], str) or\
+           not isinstance(self.initial_data['password'], str):
+            raise ValidationError({'error': 'incorrect value type of username or password'},
+                                  code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
         return super().validate(attrs)

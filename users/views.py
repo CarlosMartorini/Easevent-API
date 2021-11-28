@@ -3,12 +3,13 @@ from rest_framework.authentication import TokenAuthentication, authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
 from users.serializers import LoginSerializer, UserSerializer
-from rest_framework.permissions import IsAuthenticated
+
 
 @api_view(['get'])
 def get_owners(_):
@@ -42,7 +43,14 @@ def login(request):
             return Response({'error': 'Username or password may be wrong!'}, status=status.HTTP_401_UNAUTHORIZED)
 
     except ValidationError as e:
-        return Response(e.detail, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        if 415 in [code[0] for code in e.get_codes().values()]:
+                return Response(e.detail, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        if 406 in [code[0] for code in e.get_codes().values()]:
+                return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        return Response(e.detail, status=e.status_code)
 
 class CreateOrGetAccountsView(APIView):
     def post(self, request):
@@ -64,6 +72,7 @@ class CreateOrGetAccountsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except ValidationError as e:
+
             if 'unique' in [code[0] for code in e.get_codes().values()]:
                 return Response({'error': 'User already exists!'}, status=status.HTTP_409_CONFLICT)
 
@@ -71,10 +80,39 @@ class CreateOrGetAccountsView(APIView):
                 return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
-class UpdateOrDeleteAccountView(APIView):
+class RetrieveUpdateOrDeleteAccountView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def put(self, request, account_id: int = ''):
+
+        data = request.data
+
+        try:
+            instance = User.objects.get(id=account_id)
+
+            if  self.request.user.id != instance.id:
+                return Response({"detail": "You do not have permission to perform this action."},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            if instance.is_superuser:
+                serializer = UserSerializer(instance, data, fields=['id', 'username', 'email', 'is_superuser', 'password'], partial=True)
+
+            else:
+                serializer = UserSerializer(instance, data, partial=True)
+
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not founded."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        except ValidationError as e:
+            return Response(e.detail, status=e.status_code)
 
     def get(self, _, account_id: int = ''):
         instance = User.objects.get(id=account_id)
@@ -99,4 +137,5 @@ class UpdateOrDeleteAccountView(APIView):
                                 status=status.HTTP_403_FORBIDDEN)
 
         except User.DoesNotExist:
-            return Response({"error": "User not founded."})
+            return Response({"error": "User not founded."},
+                            status=status.HTTP_404_NOT_FOUND)
