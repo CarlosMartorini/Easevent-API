@@ -79,6 +79,7 @@ class CreateOrGetAccountsView(APIView):
             if 406 in [code[0] for code in e.get_codes().values()]:
                 return Response(e.detail, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+            return Response(e.detail, status=e.status_code)
 
 class RetrieveUpdateOrDeleteAccountView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -105,7 +106,7 @@ class RetrieveUpdateOrDeleteAccountView(APIView):
 
             serializer.save()
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data)
 
         except User.DoesNotExist:
             return Response({"error": "User not founded."},
@@ -132,6 +133,7 @@ class RetrieveUpdateOrDeleteAccountView(APIView):
             if self.request.user.id == instance.id:
                 instance.delete()
 
+                return Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({"detail": "You do not have permission to perform this action."},
                                 status=status.HTTP_403_FORBIDDEN)
