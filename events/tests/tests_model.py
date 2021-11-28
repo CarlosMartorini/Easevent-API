@@ -40,7 +40,7 @@ class TestEventModel(TestCase):
 
         cls.event = EventModel.objects.create(
             datetime=cls.datetime,
-            repeat_event=RepeatEvent.WEEKLY,
+            repeat_event=cls.repeat_event,
             address=cls.address,
             owner=cls.owner,
             details=cls.details,
@@ -72,7 +72,7 @@ class TestEventModel(TestCase):
         self.event.music_styles.add(self.music_style1)
         self.event.music_styles.add(self.music_style2)
 
-        self.assertEquals(2, self.event.music_styles.count())
+        self.assertEquals(2, len(self.event.music_styles))
 
         self.assertIn(self.music_style1, list(self.event.music_styles.all()))
         self.assertIn(self.music_style2, list(self.event.music_styles.all()))
@@ -102,7 +102,7 @@ class TestEventModel(TestCase):
         self.event.lineup.add(self.artist1, through_defaults={'performance_datetime': self.event.datetime})
         self.event.lineup.add(self.artist2, through_defaults={'performance_datetime': self.event.datetime + timedelta(hours=+1)})
 
-        self.assertEquals(2, self.event.lineup.count())
+        self.assertEquals(2, len(self.event.lineup))
 
         self.assertIn(self.artist1, list(self.event.lineup.all()))
         self.assertIn(self.artist2, list(self.event.lineup.all()))
@@ -132,7 +132,7 @@ class TestEventModel(TestCase):
         self.event.candidatures.add(self.artist1)
         self.event.candidatures.add(self.artist2)
 
-        self.assertEquals(2, self.event.candidatures.count())
+        self.assertEquals(2, len(self.event.candidatures))
 
         self.assertIn(self.artist1, list(self.event.candidatures.all()))
         self.assertIn(self.artist2, list(self.event.candidatures.all()))
