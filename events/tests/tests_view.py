@@ -1,7 +1,6 @@
 from django.test import TestCase
 from datetime import datetime, timedelta
 from users.models import User
-from adresses.models import Address
 from music_styles.models import MusicStyleModel
 from events.models import EventModel
 from rest_framework.authtoken.models import Token
@@ -180,6 +179,13 @@ class TestEventViews(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()[0], self.event_data)
         self.assertEqual(len(response.json()), EventModel.objects.count())
+
+    def test_get_event_by_id(self):
+        event = self.client.post(f'{self.base_url}', self.event_data)
+        response = self.client.get(f'{self.base_url}/1')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.event_data, response.json())
 
     def test_delete_event(self):
         event = self.client.post(f'{self.base_url}', self.event_data)
