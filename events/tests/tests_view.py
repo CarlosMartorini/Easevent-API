@@ -6,7 +6,7 @@ from events.models import EventModel
 from music_styles.models import MusicStyleModel
 from rest_framework.authtoken.models import Token
 from users.models import User
-
+from rest_framework.test import APIClient
 
 class TestEventViews(TestCase):
 
@@ -17,6 +17,7 @@ class TestEventViews(TestCase):
         cls.repeat_event = 'Weekly'
         cls.details = 'details'
         cls.base_price = 9.99
+        cls.client = APIClient()
 
         cls.owner = User.objects.create_user(
             username='owner',
