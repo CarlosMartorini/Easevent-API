@@ -58,7 +58,7 @@ class TestEventViews(TestCase):
             'repeat_event': cls.repeat_event,
             'details': cls.details,
             'base_price': cls.base_price,
-            'addresses': cls.address,
+            'address': cls.address,
             'music_styles': cls.music_styles,
         }
 
