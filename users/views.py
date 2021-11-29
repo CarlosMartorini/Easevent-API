@@ -52,7 +52,7 @@ def login(request):
 
         return Response(e.detail, status=e.status_code)
 
-class CreateOrGetAccountsView(APIView):
+class CreateAccountsView(APIView):
     def post(self, request):
 
         user = request.data
