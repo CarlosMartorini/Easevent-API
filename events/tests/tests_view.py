@@ -5,8 +5,9 @@ from django.utils import timezone
 from events.models import EventModel
 from music_styles.models import MusicStyleModel
 from rest_framework.authtoken.models import Token
-from users.models import User
 from rest_framework.test import APIClient
+from users.models import User
+
 
 class TestEventViews(TestCase):
 
@@ -37,7 +38,7 @@ class TestEventViews(TestCase):
         }
 
         cls.artist_login = {
-            'email': 'artist@example.com',
+            'username': 'artist',
             'password': '123'
         }
 
