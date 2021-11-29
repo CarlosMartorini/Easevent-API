@@ -36,6 +36,11 @@ class TestEventViews(TestCase):
             'hour_price': 9.99
         }
 
+        cls.artist_login = {
+            'email': 'artist@example.com',
+            'password': '123'
+        }
+
         cls.address = {
             'street': 'E 39th St',
             'neighbourhood': 'Murray Hill',
@@ -92,9 +97,9 @@ class TestEventViews(TestCase):
 
     def test_artist_cannot_create_new_event(self):
         artist = self.client.post('/api/accounts/', self.artist_data)
-        token_artist = Token.objects.create(artist=artist)
+        token_artist = self.client.post('/api/login/', self.artist_login).json()['token']
 
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist}')
 
         response = self.client.post(f'{self.base_url}', self.event_data)
 
@@ -219,12 +224,12 @@ class TestEventViews(TestCase):
         self.assertEqual(response.json()['error'], "Event not founded.")
 
     def test_artist_applies_for_event(self):
-        event = self.client.post(f'{self.base_url}', self.event_data)
-        artist = self.client.post('/api/accounts/', self.artist_data)
+        event = self.client.post(f'{self.base_url}', self.event_data, format='json')
+        artist = self.client.post('/api/accounts/', self.artist_data, format='json')
 
-        token_artist = Token.objects.create(artist=artist)
+        token_artist = self.client.post('/api/login/', self.artist_login, format='json').json()['token']
 
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist}')
         response = self.client.put(f'{self.base_url}/{event.id}/candidatures')
 
         self.assertEqual(response.status_code, 200)
@@ -234,9 +239,9 @@ class TestEventViews(TestCase):
         artist = self.client.post('/api/accounts/', self.artist_data)
         invalid_event_id = EventModel.objects.count() + 1
 
-        token_artist = Token.objects.create(artist=artist)
+        token_artist = self.client.post('/api/login/', self.artist_login).json()['token']
 
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist}')
         response = self.client.put(f'{self.base_url}/{invalid_event_id}/candidatures')
 
         self.assertEqual(response.status_code, 400)
@@ -247,8 +252,8 @@ class TestEventViews(TestCase):
         event = self.client.post(f'{self.base_url}', self.event_data)
         artist = self.client.post('/api/accounts/', self.artist_data)
 
-        token_artist = Token.objects.create(artist=artist)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        token_artist = self.client.post('/api/login/', self.artist_login).json()['token']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist}')
         self.client.put(f'{self.base_url}/{event.id}/candidatures')
 
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token_owner.key}')
@@ -264,8 +269,8 @@ class TestEventViews(TestCase):
         artist = self.client.post('/api/accounts/', self.artist_data)
         invalid_event_id = EventModel.objects.count() + 1
 
-        token_artist = Token.objects.create(artist=artist)
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist.key}')
+        token_artist = self.client.post('/api/login/', self.artist_login).json()['token']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token_artist}')
         self.client.put(f'{self.base_url}/{event.id}/candidatures')
 
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token_owner.key}')
