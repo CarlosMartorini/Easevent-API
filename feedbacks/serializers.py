@@ -15,7 +15,7 @@ class DynamicFieldsModelFeedbackSerializer(serializers.ModelSerializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
-class FeedbackDetailsSerializer(DynamicFieldsModelFeedbackSerializer):
+class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
     class Meta:
         model = FeedbackModel
         fields = '__all__'
