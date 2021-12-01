@@ -8,8 +8,8 @@ class RepeatEvent(models.TextChoices):
 
 
 class LineupEventModel(models.Model):
-    event = models.ForeignKey('events.EventModel', on_delete=models.CASCADE)
-    artist = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    event = models.ForeignKey('events.EventModel', on_delete=models.CASCADE, related_name='lineup_set')
+    artist = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='lineup_set')
     performance_datetime = models.DateTimeField()
 
 
