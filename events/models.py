@@ -2,9 +2,9 @@ from django.db import models
 
 
 class RepeatEvent(models.TextChoices):
-    WEEKLY = 'W', 'Weekly'
-    MONTHLY = 'M', 'Monthly'
-    NULL = 'N', 'None'
+    WEEKLY = 'Weekly', 'Weekly'
+    MONTHLY = 'Monthly', 'Monthly'
+    NULL = 'None', 'None'
 
 
 class LineupEventModel(models.Model):
@@ -15,7 +15,7 @@ class LineupEventModel(models.Model):
 
 class EventModel(models.Model):
     datetime = models.DateTimeField()
-    repeat_event = models.CharField(max_length=1, choices=RepeatEvent.choices, default=RepeatEvent.NULL)
+    repeat_event = models.CharField(max_length=7, choices=RepeatEvent.choices, default=RepeatEvent.NULL)
     address = models.ForeignKey('adresses.AdressesModel', on_delete=models.PROTECT)
     owner = models.ForeignKey('users.User', on_delete=models.PROTECT)
     details = models.TextField()
