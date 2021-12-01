@@ -1,9 +1,10 @@
 from django.test import TestCase
-from adresses.models import AdressesModel
+from django.utils import timezone
 
+from adresses.models import AdressesModel
 from feedbacks.models import FeedbackModel
 from users.models import User
-from events.models import EventModel
+from events.models import EventModel, RepeatEvent
 from music_styles.models import MusicStyleModel
 
 
@@ -55,14 +56,8 @@ class FeedbacksModelTest(TestCase):
             state = cls.state
         )
 
-        cls.music_style_name = 'Rock'
-
-        cls.music_style = MusicStyleModel.objects.create(
-            name = cls.music_style_name
-        )
-
-        cls.datetime = '2021-12-10 19:00:00'
-        cls.repeat_event = 'None'
+        cls.datetime = timezone.now()
+        cls.repeat_event = RepeatEvent.NULL
         cls.details = 'Some details for local event'
         cls.base_price = 120
 
@@ -73,7 +68,6 @@ class FeedbacksModelTest(TestCase):
             owner = cls.addressed_user,
             details = cls.details,
             base_price = cls.base_price,
-            music_style = cls.music_style
         )
 
         cls.description = 'Some description feedback',
@@ -93,3 +87,20 @@ class FeedbacksModelTest(TestCase):
 
         self.assertIsInstance(self.feedback.stars, int)
         self.assertEqual(self.feedback.stars, self.stars)
+    
+    def test_add_music_style_at_event(self):
+        self.music_style_1 = MusicStyleModel.objects.create(
+            name = 'Rock'
+        )
+
+        self.music_style_2 = MusicStyleModel.objects.create(
+            name = 'Country'
+        )
+
+        self.event.music_styles.add(self.music_style_1)
+        self.event.music_styles.add(self.music_style_2)
+
+        self.assertEquals(2, self.event.music_styles.count())
+
+        self.assertIn(self.music_style_1, list(self.event.music_style.all()))
+        self.assertIn(self.music_style_2, list(self.event.music_style.all()))
