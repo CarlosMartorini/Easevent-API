@@ -25,4 +25,4 @@ class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
     class Meta:
         model = FeedbackModel
         fields = '__all__'
-        depth = 1
+        depth = 2
