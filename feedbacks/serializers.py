@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from events.serializers import EventSerializer
 from feedbacks.models import FeedbackModel
+from users.serializers import UserSerializer
 
 
 class DynamicFieldsModelFeedbackSerializer(serializers.ModelSerializer):
@@ -16,6 +18,10 @@ class DynamicFieldsModelFeedbackSerializer(serializers.ModelSerializer):
                 self.fields.pop(field_name)
 
 class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
+    from_user = UserSerializer(fields=['id', 'username', 'email'])
+    addressed_user = UserSerializer(fields=['id', 'username', 'email'])
+    event = EventSerializer()
+
     class Meta:
         model = FeedbackModel
         fields = '__all__'
