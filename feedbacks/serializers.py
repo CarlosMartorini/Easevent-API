@@ -1,5 +1,5 @@
 from events.serializers import EventToFeedbacksSerializer
-from rest_framework import serializers
+from rest_framework import serializers, status
 from users.serializers import UserSerializer
 from rest_framework.exceptions import ValidationError
 from feedbacks.models import FeedbackModel
@@ -43,5 +43,9 @@ class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
             raise IntegrityError('You already made this feedback')
 
         if self.initial_data['from_user'].is_superuser == self.initial_data['addressed_user'].is_superuser:
-            raise ValidationError({'error': 'You can not make a feedback to the same type of user as you'})
+            raise ValidationError({'error': 'You can not make a feedback to the same type of user as you'}, code=status.HTTP_400_BAD_REQUEST)
+
+        if dict(attrs)['stars'] < 1 or\
+           dict(attrs)['stars'] > 5:
+               raise ValidationError({'error': 'Ensure the value of the stars is in the range 1 - 5!'}, code=status.HTTP_400_BAD_REQUEST)
         return super().validate(attrs)
