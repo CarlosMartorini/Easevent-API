@@ -1,11 +1,12 @@
 from django.db.utils import IntegrityError
-from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from events.models import EventModel
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import User
@@ -73,7 +74,7 @@ class FeedbackViews(viewsets.ViewSet):
             else:
                 return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
-        except KeyError:
+        except (KeyError, ValidationError):
             return Response({'required_fields': ['description', 'stars', 'addressed_user']}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except User.DoesNotExist:
