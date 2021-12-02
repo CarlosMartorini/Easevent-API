@@ -675,13 +675,6 @@ Local server URL: http://127.0.0.1:8000/
         "username": "JohnDoe",
         "email": "john.doe@gmail.com"
     },
-    "event": {
-        "id": 2,
-        "owner": {
-            "id": 7,
-            "username": "Richard",
-            "email": "richard@gmail.com"
-        },
     "description": "Some feedback description",
     "stars": 3
 }
@@ -714,7 +707,7 @@ Local server URL: http://127.0.0.1:8000/
 }
 ```
 
-## Showing Feedbacks
+## Showing Feedbacks By Event
 
 - GET api/events/2/feedbacks/
 - Status HTTP 200 OK
@@ -722,17 +715,116 @@ Local server URL: http://127.0.0.1:8000/
 - Expected response
 
 ```json
-{
-    "id": 1,
-    "event": {
-        "id": 2,
-         "owner": {
-            "id": 7,
-            "username": "Richard",
-            "email": "richard@gmail.com"
-        },
+[
+    {
+        "id": 1,
+        "description": "Some feedback description",
+        "stars": 3
     },
-    "description": "Some feedback description",
-    "stars": 3
-}
+    {
+        "id": 1,
+        "description": "Another feedback description",
+        "stars": 5
+    }
+]
+```
+
+
+## Showing Feedbacks Sent from a user
+
+- GET api/feedbacks?fromUser=1
+- Status HTTP 200 OK
+
+- Expected response
+
+```json
+[
+    {
+        "id": 1,
+        "addressed_user": {
+            "id": 2,
+            "username": "owner1",
+            "email": "owner1@gmail.com"
+        },
+        "event": {
+            "id": 1,
+            "owner": {
+                "id": 6,
+                "username": "Maria",
+                "email": "Maria@gmail.com"
+            }
+        },
+        "description": "hm",
+        "stars": 2
+    }
+]
+```
+## Showing Feedbacks Sent to an addressed user
+
+- GET api/feedbacks?addressedUser=1
+- Status HTTP 200 OK
+
+- Expected response
+
+```json
+[
+    {
+        "id": 1,
+        "from_user": {
+            "id": 7,
+            "username": "artist",
+            "email": "artist@gmail.com"
+        },
+        "addressed_user": {
+            "id": 2,
+            "username": "owner1",
+            "email": "owner1@gmail.com"
+        },
+        "event": {
+            "id": 1,
+            "owner": {
+                "id": 6,
+                "username": "Maria",
+                "email": "Maria@gmail.com"
+            }
+        },
+        "description": "hm",
+        "stars": 2
+    }
+]
+```
+
+## Showing All Feedbacks
+
+- GET api/feedbacks/
+- Status HTTP 200 OK
+
+- Expected response
+
+```json
+[
+    {
+        "id": 1,
+        "from_user": {
+            "id": 7,
+            "username": "artist",
+            "email": "artist@gmail.com"
+        },
+        "addressed_user": {
+            "id": 2,
+            "username": "owner1",
+            "email": "owner1@gmail.com"
+        },
+        "event": {
+            "id": 1,
+            "owner": {
+                "id": 6,
+                "username": "Maria",
+                "email": "Maria@gmail.com"
+            }
+        },
+        "description": "hm",
+        "stars": 2
+    }
+]
 ```
