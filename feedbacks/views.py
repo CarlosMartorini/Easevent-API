@@ -15,9 +15,10 @@ from feedbacks.serializers import FeedbackSerializer
 @api_view(['get'])
 def get_feedbacks(request):
     queryset = FeedbackModel.objects.all()
+    standard_serializer_fields = ['id', 'description', 'stars']
 
     serializer = FeedbackSerializer(queryset, many = True,
-            fields=['id', 'description', 'stars', 'event', 'from_user', 'addressed_user'])
+            fields=[*standard_serializer_fields, 'event', 'from_user', 'addressed_user'])
 
     from_user = request.query_params.get('fromUser')
     addressed_user = request.query_params.get('addressedUser')
@@ -27,13 +28,13 @@ def get_feedbacks(request):
         queryset = queryset.filter(from_user=from_user)
 
         serializer = FeedbackSerializer(queryset, many = True,
-                fields=['id', 'description', 'stars', 'event', 'addressed_user'])
+                fields=[*standard_serializer_fields, 'event', 'addressed_user'])
 
     if addressed_user:
         queryset = queryset.filter(addressed_user=addressed_user)
 
         serializer = FeedbackSerializer(queryset, many = True,
-                fields=['id', 'description', 'stars', 'event', 'from_user'])
+                fields=[*standard_serializer_fields, 'event', 'from_user'])
 
     return Response(serializer.data)
 
