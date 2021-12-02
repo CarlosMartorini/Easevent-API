@@ -4,9 +4,7 @@ from django.http import Http404
 from events.models import EventModel
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes)
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (api_view)
 from rest_framework.response import Response
 from users.models import User
 
@@ -15,14 +13,28 @@ from feedbacks.serializers import FeedbackSerializer
 
 
 @api_view(['get'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def list_own_feedbacks(request):
+def get_feedbacks(request):
     queryset = FeedbackModel.objects.all()
+    standard_serializer_fields = ['id', 'description', 'stars', 'event']
 
-    queryset = queryset.filter(from_user=request.user.id)
     serializer = FeedbackSerializer(queryset, many = True,
-            fields=['id', 'description', 'stars', 'event', 'addressed_user'])
+            fields=[*standard_serializer_fields, 'from_user', 'addressed_user'])
+
+    from_user = request.query_params.get('fromUser')
+    addressed_user = request.query_params.get('addressedUser')
+
+    if from_user:
+
+        queryset = queryset.filter(from_user=from_user)
+
+        serializer = FeedbackSerializer(queryset, many = True,
+                fields=[*standard_serializer_fields, 'addressed_user'])
+
+    if addressed_user:
+        queryset = queryset.filter(addressed_user=addressed_user)
+
+        serializer = FeedbackSerializer(queryset, many = True,
+                fields=[*standard_serializer_fields, 'from_user'])
 
     return Response(serializer.data)
 
@@ -39,7 +51,7 @@ class FeedbackViews(viewsets.ViewSet):
                                     .filter(event_id=event_id)
 
             serializer = FeedbackSerializer(queryset, many = True,
-                fields=['id', 'description', 'stars', 'event'])
+                fields=['id', 'description', 'stars'])
 
             return Response(serializer.data)
         except Http404:
