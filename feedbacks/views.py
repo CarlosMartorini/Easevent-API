@@ -1,13 +1,10 @@
 from django.db.utils import IntegrityError
-from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from events.models import EventModel
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes)
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (api_view)
 from rest_framework.response import Response
 from users.models import User
 
@@ -16,14 +13,37 @@ from feedbacks.serializers import FeedbackSerializer
 
 
 @api_view(['get'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def list_own_feedbacks(request):
+def get_feedbacks(request):
     queryset = FeedbackModel.objects.all()
 
-    queryset = queryset.filter(from_user=request.user.id)
     serializer = FeedbackSerializer(queryset, many = True,
-            fields=['id', 'description', 'stars', 'event', 'addressed_user'])
+            fields=['id', 'description', 'stars', 'event', 'from_user', 'addressed_user'])
+
+    from_user = request.query_params.get('fromUser')
+    addressed_user = request.query_params.get('addressedUser')
+
+    if from_user:
+
+        queryset = queryset.filter(from_user=from_user)
+
+        serializer = FeedbackSerializer(queryset, many = True,
+                fields=['id', 'description', 'stars', 'event', 'addressed_user'])
+
+    if addressed_user:
+        queryset = queryset.filter(addressed_user=addressed_user)
+
+        serializer = FeedbackSerializer(queryset, many = True,
+                fields=['id', 'description', 'stars', 'event', 'from_user'])
+
+    return Response(serializer.data)
+
+def list_feedbacks_by_user(request, user_id: int = ''):
+    queryset = FeedbackModel.objects.all()
+
+    queryset = queryset.filter(addressed_user=user_id)
+
+    serializer = FeedbackSerializer(queryset, many = True,
+            fields=['id', 'description', 'stars', 'event', 'from_user'])
 
     return Response(serializer.data)
 
@@ -40,7 +60,7 @@ class FeedbackViews(viewsets.ViewSet):
                                     .filter(event_id=event_id)
 
             serializer = FeedbackSerializer(queryset, many = True,
-                fields=['id', 'description', 'stars', 'event'])
+                fields=['id', 'description', 'stars'])
 
             return Response(serializer.data)
         except Http404:
@@ -74,7 +94,7 @@ class FeedbackViews(viewsets.ViewSet):
             else:
                 return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
-        except (KeyError, ValidationError):
+        except KeyError:
             return Response({'required_fields': ['description', 'stars', 'addressed_user']}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except User.DoesNotExist:

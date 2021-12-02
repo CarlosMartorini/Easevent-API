@@ -34,14 +34,6 @@ class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
 
         return FeedbackModel.objects.get_or_create(**validated_data, from_user=from_user, addressed_user=addressed_user, event=event)[0]
 
-    def validate_empty_values(self, data):
-        required_fields = ['description', 'stars', 'addressed_user']
-
-        for field in required_fields:
-            if field not in self.initial_data.keys():
-                raise ValidationError({'required_fields': ['description', 'stars', 'addressed_user']}, code=status.HTTP_406_NOT_ACCEPTABLE)
-        return super().validate_empty_values(data)
-
     def validate(self, attrs):
 
         addressed_user_feedbacks = self.initial_data['addressed_user'].feedbacks_received.get_queryset()
