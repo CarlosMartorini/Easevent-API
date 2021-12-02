@@ -26,7 +26,6 @@ class FeedbackSerializer(DynamicFieldsModelFeedbackSerializer):
     class Meta:
         model = FeedbackModel
         fields = '__all__'
-        depth = 2
 
     def create(self, validated_data):
         from_user = self.initial_data['from_user']

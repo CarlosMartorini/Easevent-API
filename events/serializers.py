@@ -73,5 +73,5 @@ class EventToFeedbacksSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventModel
-        exclude = ('candidatures', 'lineup')
+        fields = ['id', 'owner']
         depth = 1

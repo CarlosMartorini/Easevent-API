@@ -1,4 +1,6 @@
 from django.db.utils import IntegrityError
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 from events.models import EventModel
 from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -30,14 +32,18 @@ class FeedbackViews(viewsets.ViewSet):
     authentication_classes = [TokenAuthentication]
 
     def list(self, _, event_id: int = ''):
-        queryset = FeedbackModel.objects\
-                                .all()\
-                                .filter(event_id=event_id)
+        try:
+            get_object_or_404(EventModel, id=event_id)
+            queryset = FeedbackModel.objects\
+                                    .all()\
+                                    .filter(event_id=event_id)
 
-        serializer = FeedbackSerializer(queryset, many = True,
-            fields=['id', 'description', 'stars', 'event'])
+            serializer = FeedbackSerializer(queryset, many = True,
+                fields=['id', 'description', 'stars', 'event'])
 
-        return Response(serializer.data)
+            return Response(serializer.data)
+        except Http404:
+            return Response({'error': 'Event not founded!'}, status=status.HTTP_404_NOT_FOUND)
 
 
     def create(self, request, event_id: int = ''):
