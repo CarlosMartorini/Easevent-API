@@ -1,12 +1,12 @@
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
-
-from users.serializers import UserSerializer
-from .models import EventModel, LineupEventModel
-from music_styles.models import MusicStyleModel
 from adresses.models import AdressesModel
 from adresses.serializers import AdressesSerializer
+from django.shortcuts import get_object_or_404
+from music_styles.models import MusicStyleModel
+from rest_framework import serializers
 from users.models import User
+from users.serializers import UserSerializer
+
+from .models import EventModel, LineupEventModel
 
 
 class MusicStyleSerializerWithoutId(serializers.Serializer):
@@ -67,3 +67,11 @@ class EventLineupCandidaturesSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventModel
         exclude = ['owner']
+
+class EventToFeedbacksSerializer(serializers.ModelSerializer):
+    owner = UserSerializer(fields=['id', 'username', 'email'])
+
+    class Meta:
+        model = EventModel
+        fields = ['id', 'owner']
+        depth = 1
