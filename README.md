@@ -17,7 +17,7 @@ git clone git@gitlab.com:lucirasilva/easy-event.git
 Enter the project dependencies and install the virtual environment.
 
 ```bash
-python -m venv venv
+python -m venv venv --upgrade-deps
 ```
 
 Enter the virtual environment
@@ -51,7 +51,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Create User Artist
 
-- POST api/users/
+- POST api/accounts/
 - Status HTTP 201 CREATED
 
 ```json
@@ -90,7 +90,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Update User Artist
 
-- PUT api/users/1
+- PUT api/accounts/1/
 - Status HTTP 200 OK
 
 ```json
@@ -124,7 +124,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Create User Owner
 
-- POST api/users/
+- POST api/accounts/
 - Status HTTP 201 CREATED
 
 ```json
@@ -132,8 +132,7 @@ Local server URL: http://127.0.0.1:8000/
     "username": "Doe",
     "password": "67890",
     "email": "doe@gmail.com",
-    "is_superuser": true,
-    "phone": "119797979",
+    "is_superuser": true
 }
 ```
 - Expected response
@@ -143,8 +142,7 @@ Local server URL: http://127.0.0.1:8000/
     "id": 2,
     "username": "Doe",
     "email": "doe@gmail.com",
-    "is_superuser": true,
-    "phone": "119797979",
+    "is_superuser": true
 }
 ```
 
@@ -159,12 +157,12 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Update User Owner
 
-- PUT api/users/2
+- PUT api/accounts/2/
 - Status HTTP 200 OK
 
 ```json
 {
-    "phone": "139797979",
+    "username": "JDoe",
 }
 ```
 - Expected response
@@ -172,10 +170,9 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "id": 2,
-    "username": "Doe",
+    "username": "JDoe",
     "email": "doe@gmail.com",
-    "is_superuser": true,
-    "phone": "139797979",
+    "is_superuser": true
 }
 ```
 
@@ -190,7 +187,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Showing all Users
 
-- GET api/users
+- GET api/accounts/
 - Status HTTP 200 OK
 - Expected response
 
@@ -206,10 +203,9 @@ Local server URL: http://127.0.0.1:8000/
 },
 {
     "id": 2,
-    "username": "Doe",
+    "username": "JDoe",
     "email": "doe@gmail.com",
-    "is_superuser": true,
-    "phone": "139797979",
+    "is_superuser": true
 }
 ```
 
@@ -283,14 +279,14 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Create Event
 
-- POST api/events
-- Status HTTP 200 OK
+- POST api/events/
+- Status HTTP 201 CREATED
 > The event lineup will be included soon. 
 
 ```json
 {
     "date": "2021-12-10 19:00:00",
-    "repeat_date": "",
+    "repeat_date": "None",
     "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
@@ -317,7 +313,7 @@ Local server URL: http://127.0.0.1:8000/
 {
     "id": 1,
     "date": "2021-12-10 19:00:00",
-    "repeat_date": "",
+    "repeat_date": "None",
     "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
@@ -325,7 +321,7 @@ Local server URL: http://127.0.0.1:8000/
         "city": "Orlando",
         "state": "Florida",
     },
-    "owner_id": 2,
+    "owner": "Michael",
     "details": "Some details for local event",
     "base_price": 120.00,
     "music_styles": [
@@ -350,18 +346,18 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Include Artists on Event Lineup
 
-- PUT api/events/1
+- PUT api/events/1/
 - Status HTTP 200 OK
 
 ```json
 {
     "lineup": [
         {
-            "artist_id": 1,
+            "artist": 1,
             "performance_datetime": "2021-12-10 20:00:00"
         },
         {
-            "artist_id": 3,
+            "artist": 3,
             "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
@@ -374,7 +370,7 @@ Local server URL: http://127.0.0.1:8000/
 {
     "id": 1,
     "date": "2021-12-10 19:00:00",
-    "repeat_date": "",
+    "repeat_date": "None",
     "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
@@ -382,7 +378,7 @@ Local server URL: http://127.0.0.1:8000/
         "city": "Orlando",
         "state": "Florida",
     },
-    "owner_id": 2,
+    "owner": "Michael",
     "details": "Some details for local event",
     "base_price": 120.00,
     "music_styles": [
@@ -395,11 +391,11 @@ Local server URL: http://127.0.0.1:8000/
     ],
     "lineups": [
         {
-            "artist_id": 1,
+            "artist": "John",
             "performance_datetime": "2021-12-10 20:00:00"
         },
         {
-            "artist_id": 3,
+            "artist": "LadyGaga",
             "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
@@ -429,7 +425,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ```json
 {
-    "error": "Invalid event_id."
+    "error": "Invalid event id."
 }
 ```
 
@@ -438,20 +434,42 @@ Local server URL: http://127.0.0.1:8000/
 
 ```json
 {
-    "error": "Invalid artist_id."
+    "error": "Invalid artist id."
 }
 ```
 
-## Showing all Events
+## Cadidature Artist On Event
 
-- GET api/events
+- PATCH api/events/1/candidatures/
+- Status HTTP 200 OK
+
+```json
+// THE LOGGED ARTIST WILL BE PASSED
+```
+
+- Expected response
+
+```json
+{
+    "msg": "Application made successfully"
+}
+```
+
+## Owner Administration Candidatures
+
+- PATCH api/events/1/candidatures/
 - Status HTTP 200 OK
 
 ```json
 {
-    "id": 1,
-    "date": "2021-12-10 19:00:00",
-    "repeat_date": "",
+    "remove_artists": [2, 3]
+}
+```
+
+- Expected response
+
+```json
+{
     "address": {
         "street": "W Pine St",
         "neighbourhood": "Downtown Orlando",
@@ -459,7 +477,61 @@ Local server URL: http://127.0.0.1:8000/
         "city": "Orlando",
         "state": "Florida",
     },
-    "owner_id": 2,
+    "music_styles": [
+        {
+            "name": "Rock"
+        },
+        {
+            "name": "Country"
+        }
+    ],
+    "lineup": [
+        {
+            "artist": "John",
+            "performance_datetime": "2021-12-10 20:00:00"
+        },
+        {
+            "artist": "LadyGaga",
+            "performance_datetime": "2021-12-10 21:00:00"
+        }
+    ],
+    "candidatures": [
+        {
+            "username": "Robert",
+            "email": "robert@gmail.com",
+            "phone": "999898989",
+            "solo": false,
+            "hour_price": 130
+        },
+        {
+            "username": "Selena",
+            "email": "selena@gmail.com",
+            "phone": "999797979",
+            "solo": false,
+            "hour_price": 190
+        }
+    ]
+}
+```
+
+## Showing all Events
+
+- GET api/events/
+- Status HTTP 200 OK
+
+```json
+{
+    "id": 1,
+    "date": "2021-12-10 19:00:00",
+    "repeat_date": "None",
+    "address": {
+        "street": "W Pine St",
+        "neighbourhood": "Downtown Orlando",
+        "number": 37,
+        "city": "Orlando",
+        "state": "Florida",
+    },
+    "owner": "Elvis",
     "details": "Some details for local event",
     "base_price": 120.00,
     "music_styles": [
@@ -472,11 +544,11 @@ Local server URL: http://127.0.0.1:8000/
     ],
     "lineups": [
         {
-            "artist_id": 1,
+            "artist": "John",
             "performance_datetime": "2021-12-10 20:00:00"
         },
         {
-            "artist_id": 3,
+            "artist": "LadyGaga",
             "performance_datetime": "2021-12-10 21:00:00"
         }
     ]
@@ -484,7 +556,7 @@ Local server URL: http://127.0.0.1:8000/
 {
     "id": 2,
     "date": "2021-12-15 20:00:00",
-    "repeat_date": "",
+    "repeat_date": "None",
     "address": {
         "street": "2nd Ave",
         "neighbourhood": "Rose Hill",
@@ -492,7 +564,7 @@ Local server URL: http://127.0.0.1:8000/
         "city": "New York",
         "state": "New York",
     },
-    "owner_id": 4,
+    "owner": "Michael",
     "details": "Some details for local event",
     "base_price": 100.00,
     "music_styles": [
@@ -508,15 +580,15 @@ Local server URL: http://127.0.0.1:8000/
     ],
     "lineups": [
         {
-            "artist_id": 1,
+            "artist": "John",
             "performance_datetime": "2021-12-15 21:00:00"
         },
         {
-            "artist_id": 3,
+            "artist": "LadyGaga",
             "performance_datetime": "2021-12-15 22:00:00"
         },
         {
-            "artist_id": 5,
+            "artist": "Richard",
             "performance_datetime": "2021-12-15 23:00:00"
         }
     ]
@@ -525,7 +597,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Delete Event
 
-- DELETE api/events/1
+- DELETE api/events/1/
 - Status HTTP 204 NO CONTENT
 - Expected response
 
@@ -539,5 +611,64 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "error": "Event not founded."
+}
+```
+
+## Create Feedback
+
+- POST api/feedbacks/
+- Status HTTP 201 CREATED
+
+```json
+{
+    "from_user": 1,
+    "description": "Some feedback description",
+    "stars": 3,
+    "event": 1,
+    "addressed_user": 2
+}
+```
+
+- Expected response
+
+```json
+{
+    "id": 1,
+    "from_user": "Doe",
+    "description": "Some feedback description",
+    "stars": 3,
+    "event": {
+        "date": "2021-12-10 19:00:00",
+        "repeat_date": "None",
+        "address": {
+            "street": "W Pine St",
+            "neighbourhood": "Downtown Orlando",
+            "number": 37,
+            "city": "Orlando",
+            "state": "Florida",
+        },
+        "owner": "Doe",
+        "details": "Some details for local event",
+        "base_price": 120.00,
+        "music_styles": [
+            {
+                "name": "Rock"
+            },
+            {
+                "name": "Country"
+            }
+        ],
+        "lineups": [
+            {
+                "artist": "John",
+                "performance_datetime": "2021-12-10 20:00:00"
+            },
+            {
+                "artist": "LadyGaga",
+                "performance_datetime": "2021-12-10 21:00:00"
+            }
+        ]
+    },
+    "addressed_user": "John"
 }
 ```
