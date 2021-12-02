@@ -649,7 +649,7 @@ Local server URL: http://127.0.0.1:8000/
 
 ## Create Feedback
 
-- POST api/feedbacks/
+- POST api/events/\<int:event_id>/feedbacks/
 - Status HTTP 201 CREATED
 
 ```json
