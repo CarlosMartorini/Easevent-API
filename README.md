@@ -185,9 +185,9 @@ Local server URL: http://127.0.0.1:8000/
 }
 ```
 
-## Showing all Users
+## Showing all Artists
 
-- GET api/accounts/
+- GET api/accounts/artists/
 - Status HTTP 200 OK
 - Expected response
 
@@ -199,12 +199,36 @@ Local server URL: http://127.0.0.1:8000/
     "is_superuser": false,
     "phone": "199898989",
     "solo": false,
-    "hour_price": 150.00
+    "hour_price": 150
 },
+{
+    "id": 3,
+    "username": "LadyGaga",
+    "email": "lady.gaga@gmail.com",
+    "is_superuser": false,
+    "phone": "199797979",
+    "solo": false,
+    "hour_price": 190
+}
+```
+
+## Showing all Owners
+
+- GET api/accounts/owners/
+- Status HTTP 200 OK
+- Expected response
+
+```json
 {
     "id": 2,
     "username": "JDoe",
     "email": "doe@gmail.com",
+    "is_superuser": true
+},
+{
+    "id": 4,
+    "username": "Michael",
+    "email": "michael@gmail.com",
     "is_superuser": true
 }
 ```
@@ -244,6 +268,15 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "error": "Username or password it's missing"
+}
+```
+
+- If you try to pass information that is not string
+- Status HTTP 415 UNSUPPORTED MEDIA TYPE
+
+```json
+{
+    "error": "Username and password must be a string"
 }
 ```
 
@@ -621,10 +654,8 @@ Local server URL: http://127.0.0.1:8000/
 
 ```json
 {
-    "from_user": 1,
     "description": "Some feedback description",
     "stars": 3,
-    "event": 1,
     "addressed_user": 2
 }
 ```
@@ -634,41 +665,74 @@ Local server URL: http://127.0.0.1:8000/
 ```json
 {
     "id": 1,
-    "from_user": "Doe",
-    "description": "Some feedback description",
-    "stars": 3,
-    "event": {
-        "date": "2021-12-10 19:00:00",
-        "repeat_date": "None",
-        "address": {
-            "street": "W Pine St",
-            "neighbourhood": "Downtown Orlando",
-            "number": 37,
-            "city": "Orlando",
-            "state": "Florida",
-        },
-        "owner": "Doe",
-        "details": "Some details for local event",
-        "base_price": 120.00,
-        "music_styles": [
-            {
-                "name": "Rock"
-            },
-            {
-                "name": "Country"
-            }
-        ],
-        "lineups": [
-            {
-                "artist": "John",
-                "performance_datetime": "2021-12-10 20:00:00"
-            },
-            {
-                "artist": "LadyGaga",
-                "performance_datetime": "2021-12-10 21:00:00"
-            }
-        ]
+    "from_user": {
+        "id": 7,
+        "username": "Richard",
+        "email": "richard@gmail.com"
     },
-    "addressed_user": "John"
+    "addressed_user": {
+        "id": 2,
+        "username": "JohnDoe",
+        "email": "john.doe@gmail.com"
+    },
+    "event": {
+        "id": 2,
+        "owner": {
+            "id": 7,
+            "username": "Richard",
+            "email": "richard@gmail.com"
+        },
+    "description": "Some feedback description",
+    "stars": 3
+}
+```
+
+- If missing some info
+- Status HTTP 406 NOT ACCEPTABLE
+
+```json
+{
+    "required_fields": ["description", "stars", "addressed_user"]
+}
+```
+
+- If user not founded
+- Status HTTP 404 NOT FOUND
+
+```json
+{
+    "error": "User not founded."
+}
+```
+
+- If event not founded
+- Status HTTP 404 NOT FOUND
+
+```json
+{
+    "error": "Event not founded."
+}
+```
+
+## Showing Feedbacks
+
+- GET api/events/2/feedbacks/
+- Status HTTP 200 OK
+
+- Expected response
+
+```json
+{
+    "id": 1,
+    "event": {
+        "id": 2,
+         "owner": {
+            "id": 7,
+            "username": "Richard",
+            "email": "richard@gmail.com"
+        },
+    },
+    "description": "Some feedback description",
+    "stars": 3
 }
 ```
