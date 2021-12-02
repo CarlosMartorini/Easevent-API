@@ -37,16 +37,6 @@ def get_feedbacks(request):
 
     return Response(serializer.data)
 
-def list_feedbacks_by_user(request, user_id: int = ''):
-    queryset = FeedbackModel.objects.all()
-
-    queryset = queryset.filter(addressed_user=user_id)
-
-    serializer = FeedbackSerializer(queryset, many = True,
-            fields=['id', 'description', 'stars', 'event', 'from_user'])
-
-    return Response(serializer.data)
-
 class FeedbackViews(viewsets.ViewSet):
     queryset = FeedbackModel.objects.all()
     serializer_class = FeedbackSerializer
